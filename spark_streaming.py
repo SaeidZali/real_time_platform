@@ -36,51 +36,28 @@ USING iceberg
 PARTITIONED BY (bucket(16, id))
 """)
 
-# ------------------------------------------------------------------
-# Optional: Create / Refresh ClickHouse Iceberg View once at startup
-# ------------------------------------------------------------------
-def create_clickhouse_view():
-    try:
-        import clickhouse_connect
-
-        client = clickhouse_connect.get_client(
-            host="clickhouse",
-            port=8123,
-            username="default",
-            password="clickhouse123"
-        )
-
-        client.command("SET allow_experimental_database_iceberg = 1")
-
-        desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
-
-        location = (
-            desc
-            .filter("col_name = 'Location'")
-            .select("data_type")
-            .collect()[0][0]
-        )
-
-        print("Iceberg table location:", location)
-
-        ch_location = location.replace(
-            "s3://oracle-cdc/",
-            "http://minio:9000/oracle-cdc/"
-        )
-
-        client.command(f"""
-        CREATE OR REPLACE VIEW customers_view AS
-        SELECT *
-        FROM icebergS3('{ch_location}')
-        """)
-
-        print("ClickHouse view customers_view created/refreshed")
-    except Exception as e:
-        print(f"Warning: Could not create ClickHouse view: {e}")
-
-# Comment out if ClickHouse is not available
-
-create_clickhouse_view()
+import clickhouse_connect
+client = clickhouse_connect.get_client(
+    host='clickhouse',   # 👈 NOT localhost
+    port=8123,
+    username='default',
+    password='clickhouse123'
+)
+client.command("SET allow_experimental_database_iceberg = 1")
+desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
+location = (
+    desc.filter("col_name = 'Location'")
+    .select("data_type")
+    .collect()[0][0]
+)
+print("📍 Table location:", location)
+ch_location = location.replace("s3://oracle-cdc/", "http://minio:9000/oracle-cdc/")
+client.command(f"""
+CREATE VIEW IF NOT EXISTS customers_view AS
+SELECT * FROM icebergS3(
+    '{ch_location}'
+)
+""")
 
 # ------------------------------------------------------------------
 # Debezium CDC Schema
