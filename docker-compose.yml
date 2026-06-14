@@ -430,7 +430,7 @@ services:
       retries: 5
       start_period: 40s
 
-    oracle-cdc-stream:
+  oracle-cdc-stream:
     build:
       context: .
       dockerfile: Dockerfile.spark-stream
