@@ -165,7 +165,7 @@ def process_batch(batch_df, batch_id):
 stream_df = (
     spark.readStream
     .schema(cdc_schema)
-    .option("maxFilesPerTrigger", 10)
+    .option("maxFilesPerTrigger", 250)
     .parquet("s3a://oracle-cdc/topics/server1.C__DBZUSER.CUSTOMERS")
 )
 
