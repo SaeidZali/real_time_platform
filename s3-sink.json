@@ -4,33 +4,21 @@
     "connector.class": "io.confluent.connect.s3.S3SinkConnector",
     "tasks.max": "1",
     "topics": "server1.C__DBZUSER.CUSTOMERS",
-
     "s3.bucket.name": "oracle-cdc",
     "s3.region": "us-east-1",
-
     "store.url": "http://minio:9000",
     "s3.path.style.access.enabled": "true",
-
     "aws.access.key.id": "minioadmin",
     "aws.secret.access.key": "minioadmin",
-
     "storage.class": "io.confluent.connect.s3.storage.S3Storage",
     "format.class": "io.confluent.connect.s3.format.parquet.ParquetFormat",
-
     "value.converter": "io.confluent.connect.avro.AvroConverter",
     "value.converter.schema.registry.url": "http://schema-registry:8081",
-
     "schema.compatibility": "NONE",
     "behavior.on.null.values": "ignore",
-
-    "partitioner.class": "io.confluent.connect.storage.partitioner.TimeBasedPartitioner",
-    "path.format": "'year'=YYYY/'month'=MM/'day'=dd/'hour'=HH",
-    "timestamp.extractor": "Record",
-    "locale": "en_US",
-    "timezone": "UTC",
-
-    "flush.size": "500",
-    "rotate.interval.ms": "30000",
+    "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",    
+    "flush.size": "100000",
+    "rotate.interval.ms": "-1",
     "rotate.schedule.interval.ms": "60000",
     "partition.duration.ms": "3600000"
   }
