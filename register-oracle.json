@@ -19,7 +19,7 @@
     "value.converter.schema.registry.url": "http://schema-registry:8081",
     "snapshot.mode": "initial",
     "snapshot.fetch.size": "100000",
-    "snapshot.delay.ms": "1000",
+    "snapshot.delay.ms": "10000",
     "log.mining.batch.size.min": "0",
     "log.mining.batch.size.max": "1000000"
   }
