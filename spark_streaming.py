@@ -15,10 +15,7 @@ from pyspark.sql.types import (
 spark = (
     SparkSession.builder
     .appName("oracle-cdc-to-iceberg-stream")
-    .config(
-        "spark.sql.parquet.enableVectorizedReader",
-        "false"
-    )
+    .config("spark.sql.parquet.enableVectorizedReader", "false")
     .getOrCreate()
 )
 
@@ -43,43 +40,46 @@ PARTITIONED BY (bucket(16, id))
 # Optional: Create / Refresh ClickHouse Iceberg View once at startup
 # ------------------------------------------------------------------
 def create_clickhouse_view():
-    import clickhouse_connect
+    try:
+        import clickhouse_connect
 
-    client = clickhouse_connect.get_client(
-        host="clickhouse",
-        port=8123,
-        username="default",
-        password="clickhouse123"
-    )
+        client = clickhouse_connect.get_client(
+            host="clickhouse",
+            port=8123,
+            username="default",
+            password="clickhouse123"
+        )
 
-    client.command("SET allow_experimental_database_iceberg = 1")
+        client.command("SET allow_experimental_database_iceberg = 1")
 
-    desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
+        desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
 
-    location = (
-        desc
-        .filter("col_name = 'Location'")
-        .select("data_type")
-        .collect()[0][0]
-    )
+        location = (
+            desc
+            .filter("col_name = 'Location'")
+            .select("data_type")
+            .collect()[0][0]
+        )
 
-    print("Iceberg table location:", location)
+        print("Iceberg table location:", location)
 
-    ch_location = location.replace(
-        "s3://oracle-cdc/",
-        "http://minio:9000/oracle-cdc/"
-    )
+        ch_location = location.replace(
+            "s3://oracle-cdc/",
+            "http://minio:9000/oracle-cdc/"
+        )
 
-    client.command(f"""
-    CREATE OR REPLACE VIEW customers_view AS
-    SELECT *
-    FROM icebergS3('{ch_location}')
-    """)
+        client.command(f"""
+        CREATE OR REPLACE VIEW customers_view AS
+        SELECT *
+        FROM icebergS3('{ch_location}')
+        """)
 
-    print("ClickHouse view customers_view created/refreshed")
+        print("ClickHouse view customers_view created/refreshed")
+    except Exception as e:
+        print(f"Warning: Could not create ClickHouse view: {e}")
 
-
-create_clickhouse_view()
+# Comment out if ClickHouse is not available
+# create_clickhouse_view()
 
 # ------------------------------------------------------------------
 # Debezium CDC Schema
@@ -103,21 +103,14 @@ cdc_schema = StructType([
 def process_batch(batch_df, batch_id):
     """
     Processes one Spark Structured Streaming micro-batch.
-
-    CDC op meaning:
-      c = create
-      u = update
-      d = delete
-      r = snapshot/read, ignored here unless you want initial snapshot support
     """
-
     if batch_df.isEmpty():
         print(f"Batch {batch_id}: empty")
         return
 
-    print(f"Batch {batch_id}: processing started")
+    print(f"Batch {batch_id}: processing started, raw count = {batch_df.count()}")
 
-    # Keep only the latest event per customer id inside this micro-batch.
+    # Keep only the latest event per customer id inside this micro-batch
     window_spec = Window.partitionBy("id").orderBy(col("ts_ms").desc())
 
     latest_changes = (
@@ -127,21 +120,24 @@ def process_batch(batch_df, batch_id):
         .withColumn("rn", row_number().over(window_spec))
         .filter(col("rn") == 1)
         .drop("rn")
-        .select(
-            col("id"),
-            col("name"),
-            col("op"),
-            col("ts_ms")
-        )
+        .select("id", "name", "op", "ts_ms")
     )
 
-    latest_changes.createOrReplaceTempView("cdc_changes_batch")
+    changes_count = latest_changes.count()
+    print(f"Batch {batch_id}: latest changes count = {changes_count}")
 
-    # One atomic Iceberg row-level operation instead of:
-    # collect IDs -> DELETE -> INSERT
+    if changes_count == 0:
+        print(f"Batch {batch_id}: no CDC operations to process after deduplication")
+        return
+
+    # Use GLOBAL temporary view to ensure visibility in MERGE
+    latest_changes.createGlobalTempView("cdc_changes_batch")
+    print(f"Batch {batch_id}: global temporary view created")
+
+    # Execute atomic MERGE operation using global_temp
     spark.sql("""
     MERGE INTO nessie.oracle_cdc_db.customers AS target
-    USING cdc_changes_batch AS source
+    USING global_temp.cdc_changes_batch AS source
     ON target.id = source.id
 
     WHEN MATCHED AND source.op = 'd' THEN
@@ -157,7 +153,10 @@ def process_batch(batch_df, batch_id):
         VALUES (source.id, source.name, current_timestamp())
     """)
 
-    print(f"Batch {batch_id}: merge completed")
+    print(f"Batch {batch_id}: merge completed successfully")
+
+    # Clean up the global temp view
+    spark.catalog.dropGlobalTempView("cdc_changes_batch")
 
 
 # ------------------------------------------------------------------
@@ -188,10 +187,11 @@ cdc_df = (
 # ------------------------------------------------------------------
 # Start Streaming Query
 # ------------------------------------------------------------------
+# Use a fresh checkpoint location
 query = (
     cdc_df.writeStream
     .foreachBatch(process_batch)
-    .option("checkpointLocation", "s3a://oracle-cdc/checkpoints/customers_merge_v1")
+    .option("checkpointLocation", "s3a://oracle-cdc/checkpoints/customers_merge_v3")
     .trigger(processingTime="10 seconds")
     .start()
 )
