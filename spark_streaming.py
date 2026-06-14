@@ -79,7 +79,8 @@ def create_clickhouse_view():
         print(f"Warning: Could not create ClickHouse view: {e}")
 
 # Comment out if ClickHouse is not available
-# create_clickhouse_view()
+
+create_clickhouse_view()
 
 # ------------------------------------------------------------------
 # Debezium CDC Schema
