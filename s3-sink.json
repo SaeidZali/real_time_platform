@@ -20,6 +20,7 @@
     "flush.size": "100000",
     "rotate.interval.ms": "-1",
     "rotate.schedule.interval.ms": "60000",
-    "partition.duration.ms": "3600000"
+    "partition.duration.ms": "3600000",
+    "timezone": "UTC"
   }
 }
