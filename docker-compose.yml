@@ -455,6 +455,8 @@ services:
       AWS_REGION: us-east-1
       PYSPARK_PYTHON: python3
 
+    entrypoint: ["/bin/bash", "-lc"]
+
     restart: unless-stopped
 
     logging:
