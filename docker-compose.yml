@@ -430,7 +430,7 @@ services:
       retries: 5
       start_period: 40s
 
-  oracle-cdc-stream:
+    oracle-cdc-stream:
     build:
       context: .
       dockerfile: Dockerfile.spark-stream
@@ -455,7 +455,15 @@ services:
       AWS_REGION: us-east-1
       PYSPARK_PYTHON: python3
 
-    entrypoint: ["/bin/bash", "-lc"]
+    entrypoint: ["/bin/bash"]
+    command:
+      - -lc
+      - |
+        mkdir -p /tmp/spark-events
+        ls -l /opt/spark/spark_streaming.py
+        exec /opt/spark/bin/spark-submit \
+          --master local[*] \
+          /opt/spark/spark_streaming.py
 
     restart: unless-stopped
 
