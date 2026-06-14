@@ -17,7 +17,7 @@
     "schema.compatibility": "NONE",
     "behavior.on.null.values": "ignore",
     "partitioner.class": "io.confluent.connect.storage.partitioner.DefaultPartitioner",    
-    "flush.size": "100000",
+    "flush.size": "300000",
     "rotate.interval.ms": "-1",
     "rotate.schedule.interval.ms": "60000",
     "partition.duration.ms": "3600000",
