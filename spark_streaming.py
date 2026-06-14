@@ -217,6 +217,11 @@ cdc_df = (
     .filter(col("op").isNotNull())
 )
 
+print("\n" + "="*60)
+print("SETTING UP CLICKHOUSE VIEW")
+print("="*60)
+create_clickhouse_view_with_retry(max_retries=15, delay=10)
+
 # ------------------------------------------------------------------
 # Start Streaming Query
 # ------------------------------------------------------------------
