@@ -148,7 +148,7 @@ def process_batch(batch_df, batch_id):
             target.name = source.name,
             target.last_updated = current_timestamp()
 
-    WHEN NOT MATCHED AND source.op IN ('c', 'u') THEN
+    WHEN NOT MATCHED AND source.op = 'c' THEN
         INSERT (id, name, last_updated)
         VALUES (source.id, source.name, current_timestamp())
     """)
