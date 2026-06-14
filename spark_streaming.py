@@ -51,86 +51,6 @@ cdc_schema = StructType([
     StructField("op", StringType()),
     StructField("ts_ms", LongType())
 ])
-
-# ------------------------------------------------------------------
-# Function to create ClickHouse view with retry logic
-# ------------------------------------------------------------------
-def create_clickhouse_view_with_retry(max_retries=10, delay=5):
-    """
-    Creates ClickHouse view on top of Iceberg table with retry logic.
-    Waits for Iceberg table metadata to be available before creating view.
-    """
-    print("🔄 Attempting to create ClickHouse view...")
-    
-    for attempt in range(max_retries):
-        try:
-            # Connect to ClickHouse
-            client = clickhouse_connect.get_client(
-                host='clickhouse',
-                port=8123,
-                username='default',
-                password='clickhouse123'
-            )
-            
-            # Enable Iceberg experimental feature
-            client.command("SET allow_experimental_database_iceberg = 1")
-            print(f"✓ Connected to ClickHouse (attempt {attempt + 1}/{max_retries})")
-            
-            # Get Iceberg table location
-            desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
-            location = (
-                desc.filter("col_name = 'Location'")
-                .select("data_type")
-                .collect()[0][0]
-            )
-            print(f"📍 Table location: {location}")
-            
-            # Convert S3 path to HTTP URL for ClickHouse
-            ch_location = location.replace("s3://oracle-cdc/", "http://minio:9000/oracle-cdc/")
-            print(f"📍 ClickHouse location: {ch_location}")
-            
-            # Test if Iceberg metadata exists by trying to query a small sample
-            # This will fail if metadata isn't ready yet
-            test_query = f"""
-            SELECT COUNT(*) FROM icebergS3('{ch_location}')
-            """
-            test_result = client.query(test_query)
-            print(f"✓ Iceberg table is accessible, row count: {test_result.result_rows[0][0]}")
-            
-            # Create or replace the view
-            create_view_sql = f"""
-            CREATE OR REPLACE VIEW customers_view AS
-            SELECT 
-                id,
-                name,
-                last_updated
-            FROM icebergS3('{ch_location}')
-            """
-            
-            client.command(create_view_sql)
-            print("✅ ClickHouse view 'customers_view' created/updated successfully!")
-            
-            # Verify the view works
-            verify_query = "SELECT COUNT(*) FROM customers_view"
-            count = client.query(verify_query).result_rows[0][0]
-            print(f"✓ View verification successful, contains {count} rows")
-            
-            return True
-            
-        except Exception as e:
-            print(f"❌ Attempt {attempt + 1}/{max_retries} failed: {str(e)}")
-            
-            if attempt < max_retries - 1:
-                print(f"⏳ Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                print("⚠️ Failed to create ClickHouse view after all retries.")
-                print("   The streaming job will continue, but ClickHouse view won't be available.")
-                print("   You can create the view manually later using:")
-                print(f"   CREATE VIEW customers_view AS SELECT * FROM icebergS3('{ch_location}')")
-                return False
-
-# ------------------------------------------------------------------
 # foreachBatch Function: Optimized with Iceberg MERGE
 # ------------------------------------------------------------------
 def process_batch(batch_df, batch_id):
@@ -216,11 +136,6 @@ cdc_df = (
     .filter(col("id").isNotNull())
     .filter(col("op").isNotNull())
 )
-
-print("\n" + "="*60)
-print("SETTING UP CLICKHOUSE VIEW")
-print("="*60)
-create_clickhouse_view_with_retry(max_retries=15, delay=10)
 
 # ------------------------------------------------------------------
 # Start Streaming Query
