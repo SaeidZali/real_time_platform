@@ -68,3 +68,4 @@ curl --noproxy '*' -i -X POST \
 ####fs.s3a.endpoint minio:9000
 ####dremio.s3.compat true
 ####SELECT * from nessie."oracle_cdc_db".customers AT COMMIT "b01a7128b3f452342fc62136ec15eeac8d7b593504cb6bdff80b4fd1b169fab3"
+docker exec -it trino trino
