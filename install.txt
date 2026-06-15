@@ -71,3 +71,4 @@ curl --noproxy '*' -i -X POST \
 docker exec -it trino trino
 SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
 SELECT * FROM oracle."C##DBZUSER".CUSTOMERS limit 10;
+SELECT id, from_utf8(name) AS name FROM clickhouse.default.CUSTOMERS_view LIMIT 10;
