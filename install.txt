@@ -70,3 +70,4 @@ curl --noproxy '*' -i -X POST \
 ####SELECT * from nessie."oracle_cdc_db".customers AT COMMIT "b01a7128b3f452342fc62136ec15eeac8d7b593504cb6bdff80b4fd1b169fab3"
 docker exec -it trino trino
 SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
+SELECT * FROM oracle."C##DBZUSER".CUSTOMERS limit 10;
