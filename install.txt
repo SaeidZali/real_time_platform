@@ -70,10 +70,22 @@ curl --noproxy '*' -i -X POST \
 ####SELECT * from nessie."oracle_cdc_db".customers AT COMMIT "b01a7128b3f452342fc62136ec15eeac8d7b593504cb6bdff80b4fd1b169fab3"
 docker exec -it trino trino
 SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
-SELECT * FROM iceberg.oracle_cdc_db.customers FOR TIMESTAMP AS OF TIMESTAMP '2025-05-28 16:09:40.268 UTC' LIMIT 10;
+SELECT * FROM iceberg.oracle_cdc_db.customers FOR TIMESTAMP AS OF TIMESTAMP '2026-06-14 16:09:40.268 UTC' LIMIT 10;
 SELECT * FROM oracle."C##DBZUSER".CUSTOMERS limit 10;
 SELECT id, from_utf8(name) AS name FROM clickhouse.default.CUSTOMERS_view LIMIT 10;
 show schemas from kafka;
 show tables from kafka.default;
 DESCRIBE kafka.default."server1.c__dbzuser.customers";
 SELECT op, after, before, ts_ms FROM kafka.default."server1.c__dbzuser.customers" LIMIT 10;
+in http://91.107.152.33:8888/
+new python 3
+from pyspark.sql import SparkSession
+spark = SparkSession.builder.appName("IcebergTimeTravel").getOrCreate()
+spark.sql("USE nessie")
+spark.sql("USE oracle_cdc_db")
+df = spark.sql("""
+    SELECT * FROM customers 
+    FOR TIMESTAMP AS OF TIMESTAMP '2026-06-14 16:09:40.268 UTC' 
+    LIMIT 10
+""")
+df.show()
