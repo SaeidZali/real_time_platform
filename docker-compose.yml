@@ -7,8 +7,8 @@ services:
     environment:
       ORACLE_SID: ORCLCDB
       ORACLE_PDB: ORCLPDB1
-      INIT_SGA_SIZE: 750          # Increased from 750 (better memory allocation)
-      INIT_PGA_SIZE: 250           # Increased from 250
+      INIT_SGA_SIZE: 3072          # Increased from 750 (better memory allocation)
+      INIT_PGA_SIZE: 1024           # Increased from 250
       ORACLE_PWD: oraclepw
       ORACLE_CHARACTERSET: AL32UTF8
       # Disable less critical features for faster startup:
