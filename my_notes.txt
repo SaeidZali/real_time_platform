@@ -1,3 +1,5 @@
+image: trinodb/trino:451 for g8 server
+image: clickhouse/clickhouse-server:24.8 for g8 server
 ####refrence ---> https://debezium.io/blog/2022/09/30/debezium-oracle-series-part-1/
 ####refrence ---> https://debezium.io/blog/2022/10/06/debezium-oracle-series-part-2/
 ####refrence ---> https://repo1.maven.org/maven2/io/debezium/debezium-connector-oracle/3.5.2.Final/debezium-connector-oracle-3.5.2.Final-plugin.tar.gz
