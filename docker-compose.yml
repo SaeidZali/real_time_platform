@@ -321,7 +321,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - debezium-net
-    command: bash -c "airflow db migrate && airflow users create -r Admin -u admin -e admin@example.com -f admin -l user -p admin || true && airflow webserver & airflow scheduler"
+    command: bash -c "airflow db init && airflow db migrate && airflow users create -r Admin -u admin -e admin@example.com -f admin -l user -p admin || true && airflow webserver & airflow scheduler"
     restart: unless-stopped
 
   cloudbeaver:
