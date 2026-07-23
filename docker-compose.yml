@@ -291,7 +291,7 @@ services:
     restart: unless-stopped
 
   airflow:
-    image: apache/airflow:2.8.1
+    image: apache/airflow:2.6.1
     build:
       context: .
       dockerfile: Dockerfile.airflow
