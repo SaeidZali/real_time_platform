@@ -478,7 +478,7 @@ services:
         max-file: "5"
 
   trino:
-    image: trinodb/trino:latest
+    image: trinodb/trino:451
     container_name: trino
     ports:
       - "8086:8080"
