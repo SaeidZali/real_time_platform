@@ -306,6 +306,7 @@ services:
       AIRFLOW__WEBSERVER__SECRET_KEY: change_this_secret_key
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__FERNET_KEY: 81HqDtbqAywKSOumSha3BhWNOdQ26slT6K0YaZeZyPs=
+      _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
       AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30  # Check for new DAGs every 30 seconds
@@ -323,9 +324,10 @@ services:
       - debezium-net
     command: >
       bash -c "
-      airflow db migrate &&
-      airflow users create -r Admin -u admin -e admin@example.com -f admin -l user -p admin || true
-      "
+        airflow db migrate &&
+        airflow webserver &
+        airflow scheduler
+        "
     restart: unless-stopped
 
   cloudbeaver:
