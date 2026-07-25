@@ -313,6 +313,7 @@ services:
       _AIRFLOW_WWW_USER_FIRSTNAME: Admin
       _AIRFLOW_WWW_USER_LASTNAME: User
       AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__WEBSERVER__RBAC: 'true'  # Enable FAB auth
       AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 30  # Check for new DAGs every 30 seconds
       AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30  # Process DAG files every 30 seconds
       AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 60  # Increase timeout if DAGs are complex
