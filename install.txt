@@ -11,7 +11,7 @@ https://repo1.maven.org/maven2/io/openlineage/openlineage-spark_2.12/1.28.0/open
 docker login https://container-registry.oracle.com
 #and put your email and Auth token
 ################################################
-docker compose up -d
+docker compose up --build -d
 docker container logs -f dbz_oracle19
 docker container exec -it -e ORACLE_SID=ORCLCDB dbz_oracle19 sqlplus sys as sysdba
 ################################################
