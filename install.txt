@@ -13,6 +13,8 @@ docker login https://container-registry.oracle.com
 ################################################
 docker compose up --build -d
 docker container logs -f dbz_oracle19
+docker container logs -f airflow
+#to see password of admin that is random
 docker container exec -it -e ORACLE_SID=ORCLCDB dbz_oracle19 sqlplus sys as sysdba
 ################################################
 # pass is:oraclepw
