@@ -331,6 +331,7 @@ services:
     command: >
       bash -c "
         airflow db migrate &&
+        airflow users create -r Admin -u admin -e admin@example.com -f admin -l user -p admin || true &&
         airflow api-server &
         airflow scheduler
         "
