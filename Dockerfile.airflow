@@ -1,5 +1,5 @@
 # Dockerfile.airflow
-FROM apache/airflow:2.6.1
+FROM apache/airflow:latest
 USER root
 RUN apt-get update && \
     apt-get install -y docker.io && \
