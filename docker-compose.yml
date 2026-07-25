@@ -303,13 +303,17 @@ services:
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__WEBSERVER__SECRET_KEY: change_this_secret_key
+      AIRFLOW__API__SECRET_KEY: change_this_secret_key
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__FERNET_KEY: 81HqDtbqAywKSOumSha3BhWNOdQ26slT6K0YaZeZyPs=
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
-      AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 30  # Check for new DAGs every 30 seconds
+      _AIRFLOW_WWW_USER_EMAIL: admin@example.com
+      _AIRFLOW_WWW_USER_FIRSTNAME: Admin
+      _AIRFLOW_WWW_USER_LASTNAME: User
+      AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 30  # Check for new DAGs every 30 seconds
       AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 30  # Process DAG files every 30 seconds
       AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 60  # Increase timeout if DAGs are complex
       AIRFLOW__OPENLINEAGE__TRANSPORT: '{"type":"http","url":"http://marquez:5000"}'
