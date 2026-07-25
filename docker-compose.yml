@@ -505,9 +505,10 @@ services:
     restart: unless-stopped
     ports:
       - "8087:8080"
+      - "8443:8443"
     environment:
       - NIFI_WEB_HTTP_PORT=8087
-      - NIFI_WEB_HTTPS_PORT=
+      - NIFI_WEB_HTTPS_PORT=8443
     volumes:
       - ./drivers:/opt/nifi/nifi-current/drivers
 
