@@ -23,8 +23,8 @@ SELECT id,name,'state as of 1 hour ago' as description FROM latest_before_1_hour
 in localhost:20310 you can see openlineage
 my notes
 # Stop both connectors
-curl -X PUT http://localhost:8083/connectors/customers-connector/stop
-curl -X PUT http://localhost:8083/connectors/minio-s3-sink/stop
+curl -X PUT http://localhost:20314/connectors/customers-connector/stop
+curl -X PUT http://localhost:20314/connectors/minio-s3-sink/stop
 # Reset offsets for source connector (customers-connector)
 curl -X DELETE http://localhost:8083/connectors/customers-connector/offsets
 # For sink connector, you need to reset consumer group offsets
