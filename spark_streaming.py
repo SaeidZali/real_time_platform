@@ -343,15 +343,134 @@ stream_df = (
 # Flatten Debezium Events
 # ------------------------------------------------------------------
 cdc_df = (
+
     stream_df
+
     .select(
-        coalesce(col("after.ID"), col("before.ID")).cast("int").alias("id"),
-        coalesce(col("after.NAME"), col("before.NAME")).cast("string").alias("name"),
+
+        coalesce(
+            col("after.ID"),
+            col("before.ID")
+        ).cast("int").alias("id"),
+
+
+        coalesce(
+            col("after.PROVIDER"),
+            col("before.PROVIDER")
+        ).cast("string").alias("provider"),
+
+
+        coalesce(
+            col("after.QUANTITY"),
+            col("before.QUANTITY")
+        ).cast("long").alias("quantity"),
+
+
+        coalesce(
+            col("after.GD_BARCODE"),
+            col("before.GD_BARCODE")
+        ).cast("string").alias("gd_barcode"),
+
+
+        coalesce(
+            col("after.GD_NAME"),
+            col("before.GD_NAME")
+        ).cast("string").alias("gd_name"),
+
+
+        coalesce(
+            col("after.P_DATE"),
+            col("before.P_DATE")
+        ).cast("string").alias("p_date"),
+
+
+        coalesce(
+            col("after.INVOICE_ID"),
+            col("before.INVOICE_ID")
+        ).cast("string").alias("invoice_id"),
+
+
+        coalesce(
+            col("after.NCODE_MASKED"),
+            col("before.NCODE_MASKED")
+        ).cast("string").alias("ncode_masked"),
+
+
+        coalesce(
+            col("after.MOBILE_MASKED"),
+            col("before.MOBILE_MASKED")
+        ).cast("string").alias("mobile_masked"),
+
+
+        coalesce(
+            col("after.YEAR"),
+            col("before.YEAR")
+        ).cast("long").alias("year"),
+
+
+        coalesce(
+            col("after.MONTH"),
+            col("before.MONTH")
+        ).cast("long").alias("month"),
+
+
+        coalesce(
+            col("after.DAY"),
+            col("before.DAY")
+        ).cast("long").alias("day"),
+
+
+        coalesce(
+            col("after.CITY"),
+            col("before.CITY")
+        ).cast("string").alias("city"),
+
+
+        coalesce(
+            col("after.PROVINCE"),
+            col("before.PROVINCE")
+        ).cast("string").alias("province"),
+
+
+        coalesce(
+            col("after.M_DATE"),
+            col("before.M_DATE")
+        ).cast("date").alias("m_date"),
+
+
+        coalesce(
+            col("after.LATITUDE"),
+            col("before.LATITUDE")
+        ).cast("double").alias("latitude"),
+
+
+        coalesce(
+            col("after.LONGITUDE"),
+            col("before.LONGITUDE")
+        ).cast("double").alias("longitude"),
+
+
+        coalesce(
+            col("after.PROVINCE_CODE"),
+            col("before.PROVINCE_CODE")
+        ).cast("string").alias("province_code"),
+
+
+        coalesce(
+            col("after.MONTH_NAME"),
+            col("before.MONTH_NAME")
+        ).cast("string").alias("month_name"),
+
+
         col("op").cast("string").alias("op"),
+
         col("ts_ms").cast("long").alias("ts_ms")
+
     )
+
     .filter(col("id").isNotNull())
     .filter(col("op").isNotNull())
+
 )
 
 print("\n" + "="*60)
