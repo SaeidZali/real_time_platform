@@ -20,7 +20,7 @@ WITH latest_before_1_hour AS (
 SELECT COALESCE(after.ID, before.ID) as id,COALESCE(after.NAME, before.NAME) as name,op,ts_ms,ROW_NUMBER() OVER (PARTITION BY COALESCE(after.ID, before.ID) 
 ORDER BY ts_ms DESC as rn FROM parquet.`s3a://oracle-cdc/topics/server1.C__DBZUSER.CUSTOMERS` WHERE ts_ms < (UNIX_TIMESTAMP(CURRENT_TIMESTAMP() - INTERVAL '2' HOURS) * 1000))
 SELECT id,name,'state as of 1 hour ago' as description FROM latest_before_1_hour WHERE rn = 1 AND op != 'd' ORDER BY id;
-in localhost:3000 you can see openlineage
+in localhost:20310 you can see openlineage
 my notes
 # Stop both connectors
 curl -X PUT http://localhost:8083/connectors/customers-connector/stop
