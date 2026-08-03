@@ -159,7 +159,24 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             CREATE OR REPLACE VIEW customers_view AS
             SELECT 
                 id,
-                name,
+                provider,
+                quantity,
+                gd_barcode,
+                gd_name,
+                p_date,
+                invoice_id,
+                ncode_masked,
+                mobile_masked,
+                year,
+                month,
+                day,
+                city,
+                province,
+                m_date,
+                latitude,
+                longitude,
+                province_code,
+                month_name,
                 last_updated
             FROM icebergS3('{ch_location}')
             """
