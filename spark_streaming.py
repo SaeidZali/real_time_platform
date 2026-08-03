@@ -210,7 +210,29 @@ def process_batch(batch_df, batch_id):
         .withColumn("rn", row_number().over(window_spec))
         .filter(col("rn") == 1)
         .drop("rn")
-        .select("id", "name", "op", "ts_ms")
+        .select(
+        "id",
+        "provider",
+        "quantity",
+        "gd_barcode",
+        "gd_name",
+        "p_date",
+        "invoice_id",
+        "ncode_masked",
+        "mobile_masked",
+        "year",
+        "month",
+        "day",
+        "city",
+        "province",
+        "m_date",
+        "latitude",
+        "longitude",
+        "province_code",
+        "month_name",
+        "op",
+        "ts_ms"
+    )
     )
 
     changes_count = latest_changes.count()
