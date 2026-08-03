@@ -278,7 +278,28 @@ def process_batch(batch_df, batch_id):
             target.last_updated = current_timestamp()
 
     WHEN NOT MATCHED AND source.op = 'c' THEN
-        INSERT (id, name, last_updated)
+        INSERT (
+            id,
+            provider,
+            quantity,
+            gd_barcode,
+            gd_name,
+            p_date,
+            invoice_id,
+            ncode_masked,
+            mobile_masked,
+            year,
+            month,
+            day,
+            city,
+            province,
+            m_date,
+            latitude,
+            longitude,
+            province_code,
+            month_name,
+            last_updated
+        )
         VALUES (source.id, source.name, current_timestamp())
     """)
 
