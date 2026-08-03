@@ -32,7 +32,24 @@ spark.sql("CREATE DATABASE IF NOT EXISTS nessie.oracle_cdc_db")
 spark.sql("""
 CREATE TABLE IF NOT EXISTS nessie.oracle_cdc_db.customers (
     id INT,
-    name STRING,
+    provider STRING,
+    quantity BIGINT,
+    gd_barcode STRING,
+    gd_name STRING,
+    p_date STRING,
+    invoice_id STRING,
+    ncode_masked STRING,
+    mobile_masked STRING,
+    year BIGINT,
+    month BIGINT,
+    day BIGINT,
+    city STRING,
+    province STRING,
+    m_date DATE,
+    latitude DOUBLE,
+    longitude DOUBLE,
+    province_code STRING,
+    month_name STRING,
     last_updated TIMESTAMP
 )
 USING iceberg
