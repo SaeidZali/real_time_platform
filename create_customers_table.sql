@@ -9,7 +9,7 @@ PROMPT Creating customers table...
 
 -- Create the customers table
 CREATE TABLE customers (
-  id 
+  id NUMBER(9,0) PRIMARY KEY, 
   provider      VARCHAR2(255),
   quantity      NUMBER(19),
   gd_barcode    VARCHAR2(255),
