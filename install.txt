@@ -45,13 +45,13 @@ exit
 curl --noproxy localhost,127.0.0.1 -i -X POST \
   -H "Accept:application/json" \
   -H "Content-Type:application/json" \
-  localhost:8083/connectors \
+  localhost:20314/connectors \
   -d @register-oracle.json
 #### Register the connector
 curl --noproxy '*' -i -X POST \
   -H "Accept:application/json" \
   -H "Content-Type:application/json" \
-  http://localhost:8083/connectors \
+  http://localhost:20314/connectors \
   -d @s3-sink.json
 -----------------------------------------------
 ####in airflow ui you can see dag
