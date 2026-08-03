@@ -257,7 +257,24 @@ def process_batch(batch_df, batch_id):
 
     WHEN MATCHED AND source.op = 'u' THEN
         UPDATE SET
-            target.name = source.name,
+            target.provider = source.provider,
+            target.quantity = source.quantity,
+            target.gd_barcode = source.gd_barcode,
+            target.gd_name = source.gd_name,
+            target.p_date = source.p_date,
+            target.invoice_id = source.invoice_id,
+            target.ncode_masked = source.ncode_masked,
+            target.mobile_masked = source.mobile_masked,
+            target.year = source.year,
+            target.month = source.month,
+            target.day = source.day,
+            target.city = source.city,
+            target.province = source.province,
+            target.m_date = source.m_date,
+            target.latitude = source.latitude,
+            target.longitude = source.longitude,
+            target.province_code = source.province_code,
+            target.month_name = source.month_name,
             target.last_updated = current_timestamp()
 
     WHEN NOT MATCHED AND source.op = 'c' THEN
