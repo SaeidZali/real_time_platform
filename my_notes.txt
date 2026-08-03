@@ -26,17 +26,17 @@ my notes
 curl -X PUT http://localhost:20314/connectors/customers-connector/stop
 curl -X PUT http://localhost:20314/connectors/minio-s3-sink/stop
 # Reset offsets for source connector (customers-connector)
-curl -X DELETE http://localhost:8083/connectors/customers-connector/offsets
+curl -X DELETE http://localhost:20314/connectors/customers-connector/offsets
 # For sink connector, you need to reset consumer group offsets
 docker exec -it kafka kafka-consumer-groups \
   --bootstrap-server kafka:9092 \
   --group connect-minio-s3-sink \
   --reset-offsets --to-earliest --execute --all-topics
 # Resume both connectors
-curl -X PUT http://localhost:8083/connectors/customers-connector/resume
-curl -X PUT http://localhost:8083/connectors/minio-s3-sink/resume
-curl -X DELETE http://localhost:8083/connectors/customers-connector
-curl -X DELETE http://localhost:8083/connectors/minio-s3-sink
+curl -X PUT http://localhost:20314/connectors/customers-connector/resume
+curl -X PUT http://localhost:20314/connectors/minio-s3-sink/resume
+curl -X DELETE http://localhost:20314/connectors/customers-connector
+curl -X DELETE http://localhost:20314/connectors/minio-s3-sink
 docker exec -it kafka kafka-consumer-groups \
   --bootstrap-server kafka:9092 \
   --group connect-minio-s3-sink \
