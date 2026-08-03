@@ -36,7 +36,6 @@ ALTER TABLE customers ADD SUPPLEMENTAL LOG DATA (ALL) COLUMNS;
 
 PROMPT Verifying the data...
 SELECT COUNT(*) AS total_records FROM customers;
-SELECT * FROM customers ORDER BY id;
 
 PROMPT Table customers created successfully with 0 records!
 EXIT;
