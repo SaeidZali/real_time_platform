@@ -13,7 +13,24 @@ spark.sql("USE oracle_cdc_db")
 spark.sql("""
 CREATE TABLE IF NOT EXISTS nessie.oracle_cdc_db.customers (
     id BIGINT,
-    name STRING
+    provider STRING,
+    quantity BIGINT,
+    gd_barcode STRING,
+    gd_name STRING,
+    p_date STRING,
+    invoice_id STRING,
+    ncode_masked STRING,
+    mobile_masked STRING,
+    year BIGINT,
+    month BIGINT,
+    day BIGINT,
+    city STRING,
+    province STRING,
+    m_date DATE,
+    latitude DECIMAL(20,10),
+    longitude DECIMAL(20,10),
+    province_code STRING,
+    month_name STRING
 )
 USING iceberg
 """)
