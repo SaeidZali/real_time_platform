@@ -29,17 +29,6 @@ CREATE TABLE customers (
   month_name    VARCHAR2(50)
 );
 
-PROMPT Inserting sample data...
-
--- Insert sample records
-INSERT INTO customers VALUES (1001, 'Salles Thomas');
-INSERT INTO customers VALUES (1002, 'George Bailey');
-INSERT INTO customers VALUES (1003, 'Edward Walker');
-INSERT INTO customers VALUES (1004, 'Anne Kretchmar');
-
--- Commit the transaction
-COMMIT;
-
 PROMPT Enabling supplemental logging...
 
 -- Enable supplemental logging for all columns
@@ -49,5 +38,5 @@ PROMPT Verifying the data...
 SELECT COUNT(*) AS total_records FROM customers;
 SELECT * FROM customers ORDER BY id;
 
-PROMPT Table customers created successfully with 4 records!
+PROMPT Table customers created successfully with 0 records!
 EXIT;
