@@ -9,8 +9,24 @@ PROMPT Creating customers table...
 
 -- Create the customers table
 CREATE TABLE customers (
-    id NUMBER(9,0) PRIMARY KEY, 
-    name VARCHAR2(50)
+  provider      VARCHAR2(255),
+  quantity      NUMBER(19),
+  gd_barcode    VARCHAR2(255),
+  gd_name       VARCHAR2(500),
+  p_date        VARCHAR2(50),
+  invoice_id    VARCHAR2(100),
+  ncode_masked  CHAR(10),
+  mobile_masked CHAR(11),
+  year          NUMBER(19),
+  month         NUMBER(19),
+  day           NUMBER(19),
+  city          VARCHAR2(255),
+  province      VARCHAR2(255),
+  m_date        DATE,
+  latitude      NUMBER(20,10),
+  longitude     NUMBER(20,10),
+  province_code VARCHAR2(50),
+  month_name    VARCHAR2(50)
 );
 
 PROMPT Inserting sample data...
