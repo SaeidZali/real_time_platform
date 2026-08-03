@@ -60,14 +60,51 @@ PARTITIONED BY (bucket(16, id))
 # Debezium CDC Schema
 # ------------------------------------------------------------------
 cdc_schema = StructType([
+
     StructField("before", StructType([
         StructField("ID", IntegerType()),
-        StructField("NAME", StringType())
+        StructField("PROVIDER", StringType()),
+        StructField("QUANTITY", LongType()),
+        StructField("GD_BARCODE", StringType()),
+        StructField("GD_NAME", StringType()),
+        StructField("P_DATE", StringType()),
+        StructField("INVOICE_ID", StringType()),
+        StructField("NCODE_MASKED", StringType()),
+        StructField("MOBILE_MASKED", StringType()),
+        StructField("YEAR", LongType()),
+        StructField("MONTH", LongType()),
+        StructField("DAY", LongType()),
+        StructField("CITY", StringType()),
+        StructField("PROVINCE", StringType()),
+        StructField("M_DATE", DateType()),
+        StructField("LATITUDE", DoubleType()),
+        StructField("LONGITUDE", DoubleType()),
+        StructField("PROVINCE_CODE", StringType()),
+        StructField("MONTH_NAME", StringType())
     ])),
+
     StructField("after", StructType([
         StructField("ID", IntegerType()),
-        StructField("NAME", StringType())
+        StructField("PROVIDER", StringType()),
+        StructField("QUANTITY", LongType()),
+        StructField("GD_BARCODE", StringType()),
+        StructField("GD_NAME", StringType()),
+        StructField("P_DATE", StringType()),
+        StructField("INVOICE_ID", StringType()),
+        StructField("NCODE_MASKED", StringType()),
+        StructField("MOBILE_MASKED", StringType()),
+        StructField("YEAR", LongType()),
+        StructField("MONTH", LongType()),
+        StructField("DAY", LongType()),
+        StructField("CITY", StringType()),
+        StructField("PROVINCE", StringType()),
+        StructField("M_DATE", DateType()),
+        StructField("LATITUDE", DoubleType()),
+        StructField("LONGITUDE", DoubleType()),
+        StructField("PROVINCE_CODE", StringType()),
+        StructField("MONTH_NAME", StringType())
     ])),
+
     StructField("op", StringType()),
     StructField("ts_ms", LongType())
 ])
