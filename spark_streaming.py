@@ -300,7 +300,27 @@ def process_batch(batch_df, batch_id):
             month_name,
             last_updated
         )
-        VALUES (source.id, source.name, current_timestamp())
+        VALUES (
+            source.id,
+            source.provider,
+            source.quantity,
+            source.gd_barcode,
+            source.gd_name,
+            source.p_date,
+            source.invoice_id,
+            source.ncode_masked,
+            source.mobile_masked,
+            source.year,
+            source.month,
+            source.day,
+            source.city,
+            source.province,
+            source.m_date,
+            source.latitude,
+            source.longitude,
+            source.province_code,
+            source.month_name,
+            current_timestamp())
     """)
 
     print(f"Batch {batch_id}: merge completed successfully")
