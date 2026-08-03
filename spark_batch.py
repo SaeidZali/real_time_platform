@@ -128,7 +128,26 @@ WHERE id IN (
 """)
 spark.sql("""
 INSERT INTO nessie.oracle_cdc_db.customers
-SELECT id, name
+SELECT 
+id,
+provider,
+quantity,
+gd_barcode,
+gd_name,
+p_date,
+invoice_id,
+ncode_masked,
+mobile_masked,
+year,
+month,
+day,
+city,
+province,
+CAST(m_date AS DATE),
+latitude,
+longitude,
+province_code,
+month_name
 FROM cdc_changes
 WHERE op IN ('c','u')
 """)
