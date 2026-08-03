@@ -6,7 +6,9 @@ from pyspark.sql.types import (
     StructField,
     IntegerType,
     StringType,
-    LongType
+    LongType,
+    DoubleType,
+    DateType
 )
 import clickhouse_connect
 import time
