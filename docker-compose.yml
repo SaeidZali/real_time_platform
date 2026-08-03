@@ -507,8 +507,8 @@ services:
       - "20304:8080"
       - "20305:8443"
     environment:
-      - NIFI_WEB_HTTP_PORT=20304
-      - NIFI_WEB_HTTPS_PORT=20305
+      - NIFI_WEB_HTTP_PORT=8080
+      - NIFI_WEB_HTTPS_PORT=8443
     volumes:
       - ./drivers:/opt/nifi/nifi-current/drivers
     networks:
