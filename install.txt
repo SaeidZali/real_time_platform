@@ -80,7 +80,7 @@ show schemas from kafka;
 show tables from kafka.default;
 DESCRIBE kafka.default."server1.c__dbzuser.customers";
 SELECT op, after, before, ts_ms FROM kafka.default."server1.c__dbzuser.customers" LIMIT 10;
-in http://91.107.152.33:8888/
+in http://85.185.53.173:20323/
 new python 3
 from pyspark.sql import SparkSession
 spark = SparkSession.builder.appName("IcebergTimeTravel").getOrCreate()
