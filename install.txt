@@ -55,7 +55,7 @@ curl --noproxy '*' -i -X POST \
   -d @s3-sink.json
 -----------------------------------------------
 ####in airflow ui you can see dag
-####in localhost:8080 in superset connect to clickhouse and create dashboard
+####in superset connect to clickhouse and create dashboard
 ####in dremio 
 ####add source ;
 ####in general tab
