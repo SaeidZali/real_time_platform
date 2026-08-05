@@ -10,7 +10,6 @@ cd sparkjars
 wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.525/aws-java-sdk-bundle-1.12.525.jar
 wget https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.5.0/iceberg-spark-runtime-3.5_2.12-1.5.0.jar
 wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
-docker cp spark-iceberg:/opt/spark/jars/. .
 cd ../
 ################################################
 #First go to https://container-registry.oracle.com with your account, then get new Auth token in your account profile. 
@@ -20,6 +19,7 @@ docker login https://container-registry.oracle.com
 ################################################
 docker compose up --build -d
 docker container logs -f dbz_oracle19
+docker cp spark-iceberg:/opt/spark/jars/. .
 docker compose logs airflow | grep "Simple auth manager"
 #to see password of admin that is random
 docker container exec -it -e ORACLE_SID=ORCLCDB dbz_oracle19 sqlplus sys as sysdba
