@@ -63,6 +63,7 @@ cd sparkjars
 wget https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.525/aws-java-sdk-bundle-1.12.525.jar
 wget https://repo1.maven.org/maven2/org/apache/iceberg/iceberg-spark-runtime-3.5_2.12/1.5.0/iceberg-spark-runtime-3.5_2.12-1.5.0.jar
 wget https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar
+docker cp spark-iceberg:/opt/spark/jars/. .
 ####in airflow ui you can see dag
 ####in superset connect to clickhouse and create dashboard
 ####in dremio 
