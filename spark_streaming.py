@@ -201,7 +201,7 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
                 print("⚠️ Failed to create ClickHouse view after all retries.")
                 print("   The streaming job will continue, but ClickHouse view won't be available.")
                 print("   You can create the view manually later using:")
-                print(f"   CREATE VIEW FACT_SALES AS SELECT * FROM icebergS3('{ch_location}')")
+                print(f"   CREATE VIEW FACT_SALES AS SELECT * FROM iceberg('{ch_location}')")
                 return False
 
 # ------------------------------------------------------------------
