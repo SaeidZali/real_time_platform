@@ -163,6 +163,7 @@ services:
       - ./spark/conf/spark-defaults.conf:/opt/spark/conf/spark-defaults.conf
       - ./spark_batch.py:/opt/spark/spark_batch.py
       - ./jars/openlineage-spark.jar:/opt/spark/jars/openlineage-spark.jar
+      - ./sparkjars:/opt/spark/jars
     environment:
       - AWS_ACCESS_KEY_ID=minioadmin
       - AWS_SECRET_ACCESS_KEY=minioadmin
