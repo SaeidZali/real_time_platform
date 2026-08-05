@@ -156,9 +156,8 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             
             # Create or replace the view
             create_view_sql = f"""
-            CREATE OR REPLACE VIEW customers_view AS
+            CREATE OR REPLACE VIEW FACT_SALES AS
             SELECT 
-                id,
                 provider,
                 quantity,
                 gd_barcode,
@@ -182,7 +181,7 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             """
             
             client.command(create_view_sql)
-            print("✅ ClickHouse view 'customers_view' created/updated successfully!")
+            print("✅ ClickHouse view 'FACT_SALES' created/updated successfully!")
             
             # Verify the view works
             verify_query = "SELECT COUNT(*) FROM customers_view"
@@ -201,7 +200,7 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
                 print("⚠️ Failed to create ClickHouse view after all retries.")
                 print("   The streaming job will continue, but ClickHouse view won't be available.")
                 print("   You can create the view manually later using:")
-                print(f"   CREATE VIEW customers_view AS SELECT * FROM icebergS3('{ch_location}')")
+                print(f"   CREATE VIEW FACT_SALES AS SELECT * FROM icebergS3('{ch_location}')")
                 return False
 
 # ------------------------------------------------------------------
