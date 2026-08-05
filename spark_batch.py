@@ -172,7 +172,7 @@ print("📍 Table location:", location)
 ch_location = location.replace("s3://oracle-cdc/", "http://minio:9000/oracle-cdc/")
 client.command(f"""
 CREATE VIEW IF NOT EXISTS FACT_SALES AS
-SELECT * FROM icebergS3(
+SELECT * FROM iceberg( #icebergS3(
     '{ch_location}'
 )
 """)
