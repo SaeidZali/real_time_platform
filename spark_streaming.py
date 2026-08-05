@@ -184,7 +184,7 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             print("✅ ClickHouse view 'FACT_SALES' created/updated successfully!")
             
             # Verify the view works
-            verify_query = "SELECT COUNT(*) FROM customers_view"
+            verify_query = "SELECT COUNT(*) FROM FACT_SALES"
             count = client.query(verify_query).result_rows[0][0]
             print(f"✓ View verification successful, contains {count} rows")
             
