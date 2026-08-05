@@ -160,7 +160,8 @@ client = clickhouse_connect.get_client(
     username='default',
     password='clickhouse123'
 )
-client.command("SET allow_experimental_database_iceberg = 1")
+#client.command("SET allow_experimental_database_iceberg = 1")
+client.command("SET allow_experimental_database_atomic = 1")  # ✅ Works
 desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
 location = (
     desc.filter("col_name = 'Location'")
