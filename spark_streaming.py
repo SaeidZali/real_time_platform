@@ -179,8 +179,9 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
                 province_code,
                 month_name,
                 last_updated
-            FROM icebergS3('{ch_location}')
+            FROM iceberg('{ch_location}')
             """
+            #FROM icebergS3('{ch_location}')
             
             client.command(create_view_sql)
             print("✅ ClickHouse view 'FACT_SALES' created/updated successfully!")
