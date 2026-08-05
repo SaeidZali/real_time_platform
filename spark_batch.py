@@ -155,8 +155,8 @@ spark.sql("show tables").show()
 spark.sql("SELECT * FROM nessie.oracle_cdc_db.customers").show()
 import clickhouse_connect
 client = clickhouse_connect.get_client(
-    host='clickhouse',   # 👈 NOT localhost
-    port=8123,
+    host='172.16.1.4',#'clickhouse',   # 👈 NOT localhost
+    port=20322#8123,
     username='default',
     password='clickhouse123'
 )
