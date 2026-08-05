@@ -130,7 +130,8 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             )
             
             # Enable Iceberg experimental feature
-            client.command("SET allow_experimental_database_iceberg = 1")
+            #client.command("SET allow_experimental_database_iceberg = 1")
+            client.command("SET allow_experimental_database_atomic = 1")  # ✅ Works
             print(f"✓ Connected to ClickHouse (attempt {attempt + 1}/{max_retries})")
             
             # Get Iceberg table location
