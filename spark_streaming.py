@@ -150,7 +150,8 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             # Test if Iceberg metadata exists by trying to query a small sample
             # This will fail if metadata isn't ready yet
             test_query = f"""
-            SELECT COUNT(*) FROM icebergS3('{ch_location}')
+            #SELECT COUNT(*) FROM icebergS3('{ch_location}')
+            SELECT COUNT(*) FROM iceberg('{ch_location}')
             """
             test_result = client.query(test_query)
             print(f"✓ Iceberg table is accessible, row count: {test_result.result_rows[0][0]}")
