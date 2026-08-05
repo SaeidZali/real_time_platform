@@ -123,8 +123,8 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
         try:
             # Connect to ClickHouse
             client = clickhouse_connect.get_client(
-                host='clickhouse',
-                port=8123,
+                host='172.16.1.4',#'clickhouse',
+                port=20322,#8123,
                 username='default',
                 password='clickhouse123'
             )
