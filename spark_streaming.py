@@ -1,524 +1,123 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, coalesce, row_number, current_timestamp
+from pyspark.sql.functions import col, coalesce, row_number, current_timestamp, trim, from_unixtime, to_date
 from pyspark.sql.window import Window
-from pyspark.sql.types import (
-    StructType,
-    StructField,
-    IntegerType,
-    StringType,
-    LongType,
-    DoubleType,
-    DateType
-)
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType, LongType, DateType, DecimalType
 import clickhouse_connect
 import time
-# ------------------------------------------------------------------
-# Spark Session
-# ------------------------------------------------------------------
+
 spark = (
     SparkSession.builder
-    .appName("oracle-cdc-to-iceberg-stream")
+    .appName("oracle-cdc-to-iceberg-stream-A")
     .config("spark.sql.parquet.enableVectorizedReader", "false")
+    .config("spark.sql.adaptive.enabled", "false")
     .getOrCreate()
 )
-
 spark.sparkContext.setLogLevel("WARN")
 
 # ------------------------------------------------------------------
-# Database and Iceberg Target Table
+# Iceberg Table - Matches Oracle DDL
 # ------------------------------------------------------------------
 spark.sql("CREATE DATABASE IF NOT EXISTS nessie.oracle_cdc_db")
-
 spark.sql("""
 CREATE TABLE IF NOT EXISTS nessie.oracle_cdc_db.customers (
-    id INT,
-    provider STRING,
-    quantity BIGINT,
-    gd_barcode STRING,
-    gd_name STRING,
-    p_date STRING,
-    invoice_id STRING,
-    ncode_masked STRING,
-    mobile_masked STRING,
-    year BIGINT,
-    month BIGINT,
-    day BIGINT,
-    city STRING,
-    province STRING,
-    m_date DATE,
-    latitude DOUBLE,
-    longitude DOUBLE,
-    province_code STRING,
-    month_name STRING,
-    last_updated TIMESTAMP
-)
-USING iceberg
-PARTITIONED BY (bucket(16, id))
+    id INT, provider STRING, quantity BIGINT, gd_barcode STRING, gd_name STRING,
+    p_date STRING, invoice_id STRING, ncode_masked STRING, mobile_masked STRING,
+    year BIGINT, month BIGINT, day BIGINT, city STRING, province STRING,
+    m_date DATE, latitude DECIMAL(20,10), longitude DECIMAL(20,10),
+    province_code STRING, month_name STRING, last_updated TIMESTAMP
+) USING iceberg PARTITIONED BY (bucket(16, id))
 """)
 
 # ------------------------------------------------------------------
-# Debezium CDC Schema
+# CORRECT CDC SCHEMA - Must match Parquet file exactly from your log
+# QUANTITY/YEAR/MONTH/DAY = decimal(19,0) NOT Long
+# M_DATE = long (epoch ms) NOT Date
 # ------------------------------------------------------------------
 cdc_schema = StructType([
-
     StructField("before", StructType([
-        StructField("ID", IntegerType()),
-        StructField("PROVIDER", StringType()),
-        StructField("QUANTITY", LongType()),
-        StructField("GD_BARCODE", StringType()),
-        StructField("GD_NAME", StringType()),
-        StructField("P_DATE", StringType()),
-        StructField("INVOICE_ID", StringType()),
-        StructField("NCODE_MASKED", StringType()),
-        StructField("MOBILE_MASKED", StringType()),
-        StructField("YEAR", LongType()),
-        StructField("MONTH", LongType()),
-        StructField("DAY", LongType()),
-        StructField("CITY", StringType()),
-        StructField("PROVINCE", StringType()),
-        StructField("M_DATE", DateType()),
-        StructField("LATITUDE", DoubleType()),
-        StructField("LONGITUDE", DoubleType()),
-        StructField("PROVINCE_CODE", StringType()),
+        StructField("ID", IntegerType()), StructField("PROVIDER", StringType()),
+        StructField("QUANTITY", DecimalType(19,0)), StructField("GD_BARCODE", StringType()),
+        StructField("GD_NAME", StringType()), StructField("P_DATE", StringType()),
+        StructField("INVOICE_ID", StringType()), StructField("NCODE_MASKED", StringType()),
+        StructField("MOBILE_MASKED", StringType()), StructField("YEAR", DecimalType(19,0)),
+        StructField("MONTH", DecimalType(19,0)), StructField("DAY", DecimalType(19,0)),
+        StructField("CITY", StringType()), StructField("PROVINCE", StringType()),
+        StructField("M_DATE", LongType()), StructField("LATITUDE", DecimalType(20,10)),
+        StructField("LONGITUDE", DecimalType(20,10)), StructField("PROVINCE_CODE", StringType()),
         StructField("MONTH_NAME", StringType())
     ])),
-
     StructField("after", StructType([
-        StructField("ID", IntegerType()),
-        StructField("PROVIDER", StringType()),
-        StructField("QUANTITY", LongType()),
-        StructField("GD_BARCODE", StringType()),
-        StructField("GD_NAME", StringType()),
-        StructField("P_DATE", StringType()),
-        StructField("INVOICE_ID", StringType()),
-        StructField("NCODE_MASKED", StringType()),
-        StructField("MOBILE_MASKED", StringType()),
-        StructField("YEAR", LongType()),
-        StructField("MONTH", LongType()),
-        StructField("DAY", LongType()),
-        StructField("CITY", StringType()),
-        StructField("PROVINCE", StringType()),
-        StructField("M_DATE", DateType()),
-        StructField("LATITUDE", DoubleType()),
-        StructField("LONGITUDE", DoubleType()),
-        StructField("PROVINCE_CODE", StringType()),
+        StructField("ID", IntegerType()), StructField("PROVIDER", StringType()),
+        StructField("QUANTITY", DecimalType(19,0)), StructField("GD_BARCODE", StringType()),
+        StructField("GD_NAME", StringType()), StructField("P_DATE", StringType()),
+        StructField("INVOICE_ID", StringType()), StructField("NCODE_MASKED", StringType()),
+        StructField("MOBILE_MASKED", StringType()), StructField("YEAR", DecimalType(19,0)),
+        StructField("MONTH", DecimalType(19,0)), StructField("DAY", DecimalType(19,0)),
+        StructField("CITY", StringType()), StructField("PROVINCE", StringType()),
+        StructField("M_DATE", LongType()), StructField("LATITUDE", DecimalType(20,10)),
+        StructField("LONGITUDE", DecimalType(20,10)), StructField("PROVINCE_CODE", StringType()),
         StructField("MONTH_NAME", StringType())
     ])),
-
-    StructField("op", StringType()),
-    StructField("ts_ms", LongType())
+    StructField("op", StringType()), StructField("ts_ms", LongType())
 ])
 
-# ------------------------------------------------------------------
-# Function to create ClickHouse view with retry logic
-# ------------------------------------------------------------------
 def create_clickhouse_view_with_retry(max_retries=10, delay=5):
-    """
-    Creates ClickHouse view on top of Iceberg table with retry logic.
-    Waits for Iceberg table metadata to be available before creating view.
-    """
-    print("🔄 Attempting to create ClickHouse view...")
-    
     for attempt in range(max_retries):
         try:
-            # Connect to ClickHouse
-            client = clickhouse_connect.get_client(
-                host='172.16.1.4',#'clickhouse',
-                port=20322,#8123,
-                username='default',
-                password='clickhouse123'
-            )
-            
-            # Enable Iceberg experimental feature
-            #client.command("SET allow_experimental_database_iceberg = 1")
-            client.command("SET allow_experimental_database_atomic = 1")  # ✅ Works
-            print(f"✓ Connected to ClickHouse (attempt {attempt + 1}/{max_retries})")
-            
-            # Get Iceberg table location
-            desc = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers")
-            location = (
-                desc.filter("col_name = 'Location'")
-                .select("data_type")
-                .collect()[0][0]
-            )
-            print(f"📍 Table location: {location}")
-            
-            # Convert S3 path to HTTP URL for ClickHouse
+            client = clickhouse_connect.get_client(host='172.16.1.4', port=20322, username='default', password='clickhouse123')
+            client.command("SET allow_experimental_database_atomic = 1")
+            location = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers").filter("col_name = 'Location'").collect()[0][1]
             ch_location = location.replace("s3://oracle-cdc/", "http://minio:9000/oracle-cdc/")
-            print(f"📍 ClickHouse location: {ch_location}")
-            
-            # Test if Iceberg metadata exists by trying to query a small sample
-            # This will fail if metadata isn't ready yet
-            # SELECT COUNT(*) FROM icebergS3('{ch_location}')
-            test_query = f"""
-            SELECT COUNT(*) FROM iceberg('{ch_location}')
-            """
-            test_result = client.query(test_query)
-            print(f"✓ Iceberg table is accessible, row count: {test_result.result_rows[0][0]}")
-            
-            # Create or replace the view
-            create_view_sql = f"""
-            CREATE OR REPLACE VIEW FACT_SALES AS
-            SELECT 
-                provider,
-                quantity,
-                gd_barcode,
-                gd_name,
-                p_date,
-                invoice_id,
-                ncode_masked,
-                mobile_masked,
-                year,
-                month,
-                day,
-                city,
-                province,
-                m_date,
-                latitude,
-                longitude,
-                province_code,
-                month_name,
-                last_updated
-            FROM iceberg('{ch_location}')
-            """
-            #FROM icebergS3('{ch_location}')
-            
-            client.command(create_view_sql)
-            print("✅ ClickHouse view 'FACT_SALES' created/updated successfully!")
-            
-            # Verify the view works
-            verify_query = "SELECT COUNT(*) FROM FACT_SALES"
-            count = client.query(verify_query).result_rows[0][0]
-            print(f"✓ View verification successful, contains {count} rows")
-            
-            return True
-            
+            client.command(f"CREATE OR REPLACE VIEW FACT_SALES AS SELECT provider,quantity,gd_barcode,gd_name,p_date,invoice_id,ncode_masked,mobile_masked,year,month,day,city,province,m_date,toFloat64(latitude) AS latitude,toFloat64(longitude) AS longitude,province_code,month_name FROM iceberg('{ch_location}')")
+            print("✅ ClickHouse view FACT_SALES created"); return True
         except Exception as e:
-            print(f"❌ Attempt {attempt + 1}/{max_retries} failed: {str(e)}")
-            
-            if attempt < max_retries - 1:
-                print(f"⏳ Retrying in {delay} seconds...")
-                time.sleep(delay)
-            else:
-                print("⚠️ Failed to create ClickHouse view after all retries.")
-                print("   The streaming job will continue, but ClickHouse view won't be available.")
-                print("   You can create the view manually later using:")
-                print(f"   CREATE VIEW FACT_SALES AS SELECT * FROM iceberg('{ch_location}')")
-                return False
+            print(f"Retry {attempt+1} failed: {e}"); time.sleep(delay)
+    return False
 
-# ------------------------------------------------------------------
-# foreachBatch Function: Optimized with Iceberg MERGE
-# ------------------------------------------------------------------
 def process_batch(batch_df, batch_id):
-    """
-    Processes one Spark Structured Streaming micro-batch.
-    """
     if batch_df.isEmpty():
-        print(f"Batch {batch_id}: empty")
-        return
-
-    print(f"Batch {batch_id}: processing started, raw count = {batch_df.count()}")
-
-    # Keep only the latest event per customer id inside this micro-batch
-    window_spec = Window.partitionBy("id").orderBy(col("ts_ms").desc())
-
-    latest_changes = (
-        batch_df
-        .filter(col("id").isNotNull())
-        .filter(col("op").isin("c", "u", "d"))
-        .withColumn("rn", row_number().over(window_spec))
-        .filter(col("rn") == 1)
-        .drop("rn")
-        .select(
-        "id",
-        "provider",
-        "quantity",
-        "gd_barcode",
-        "gd_name",
-        "p_date",
-        "invoice_id",
-        "ncode_masked",
-        "mobile_masked",
-        "year",
-        "month",
-        "day",
-        "city",
-        "province",
-        "m_date",
-        "latitude",
-        "longitude",
-        "province_code",
-        "month_name",
-        "op",
-        "ts_ms"
-    )
-    )
-
-    changes_count = latest_changes.count()
-    print(f"Batch {batch_id}: latest changes count = {changes_count}")
-
-    if changes_count == 0:
-        print(f"Batch {batch_id}: no CDC operations to process after deduplication")
-        return
-
-    # Use GLOBAL temporary view to ensure visibility in MERGE
-    latest_changes.createGlobalTempView("cdc_changes_batch")
-    print(f"Batch {batch_id}: global temporary view created")
-
-    # Execute atomic MERGE operation using global_temp
+        print(f"Batch {batch_id}: empty"); return
+    print(f"Batch {batch_id}: count = {batch_df.count()}")
+    w = Window.partitionBy("id").orderBy(col("ts_ms").desc())
+    latest = batch_df.filter(col("id").isNotNull()).filter(col("op").isin("c","u","d")).withColumn("rn", row_number().over(w)).filter(col("rn")==1).drop("rn")
+    if latest.isEmpty(): return
+    latest.createGlobalTempView("cdc_changes_batch")
     spark.sql("""
-    MERGE INTO nessie.oracle_cdc_db.customers AS target
-    USING global_temp.cdc_changes_batch AS source
-    ON target.id = source.id
-
-    WHEN MATCHED AND source.op = 'd' THEN
-        DELETE
-
-    WHEN MATCHED AND source.op = 'u' THEN
-        UPDATE SET
-            target.provider = source.provider,
-            target.quantity = source.quantity,
-            target.gd_barcode = source.gd_barcode,
-            target.gd_name = source.gd_name,
-            target.p_date = source.p_date,
-            target.invoice_id = source.invoice_id,
-            target.ncode_masked = source.ncode_masked,
-            target.mobile_masked = source.mobile_masked,
-            target.year = source.year,
-            target.month = source.month,
-            target.day = source.day,
-            target.city = source.city,
-            target.province = source.province,
-            target.m_date = source.m_date,
-            target.latitude = source.latitude,
-            target.longitude = source.longitude,
-            target.province_code = source.province_code,
-            target.month_name = source.month_name,
-            target.last_updated = current_timestamp()
-
-    WHEN NOT MATCHED AND source.op = 'c' THEN
-        INSERT (
-            id,
-            provider,
-            quantity,
-            gd_barcode,
-            gd_name,
-            p_date,
-            invoice_id,
-            ncode_masked,
-            mobile_masked,
-            year,
-            month,
-            day,
-            city,
-            province,
-            m_date,
-            latitude,
-            longitude,
-            province_code,
-            month_name,
-            last_updated
-        )
-        VALUES (
-            source.id,
-            source.provider,
-            source.quantity,
-            source.gd_barcode,
-            source.gd_name,
-            source.p_date,
-            source.invoice_id,
-            source.ncode_masked,
-            source.mobile_masked,
-            source.year,
-            source.month,
-            source.day,
-            source.city,
-            source.province,
-            source.m_date,
-            source.latitude,
-            source.longitude,
-            source.province_code,
-            source.month_name,
-            current_timestamp())
+    MERGE INTO nessie.oracle_cdc_db.customers AS t USING global_temp.cdc_changes_batch AS s ON t.id=s.id
+    WHEN MATCHED AND s.op='d' THEN DELETE
+    WHEN MATCHED AND s.op='u' THEN UPDATE SET t.provider=s.provider, t.quantity=s.quantity, t.gd_barcode=s.gd_barcode, t.gd_name=s.gd_name, t.p_date=s.p_date, t.invoice_id=s.invoice_id, t.ncode_masked=trim(s.ncode_masked), t.mobile_masked=trim(s.mobile_masked), t.year=s.year, t.month=s.month, t.day=s.day, t.city=s.city, t.province=s.province, t.m_date=s.m_date, t.latitude=s.latitude, t.longitude=s.longitude, t.province_code=s.province_code, t.month_name=s.month_name, t.last_updated=current_timestamp()
+    WHEN NOT MATCHED AND s.op='c' THEN INSERT (id,provider,quantity,gd_barcode,gd_name,p_date,invoice_id,ncode_masked,mobile_masked,year,month,day,city,province,m_date,latitude,longitude,province_code,month_name,last_updated) VALUES (s.id,s.provider,s.quantity,s.gd_barcode,s.gd_name,s.p_date,s.invoice_id,trim(s.ncode_masked),trim(s.mobile_masked),s.year,s.month,s.day,s.city,s.province,s.m_date,s.latitude,s.longitude,s.province_code,s.month_name,current_timestamp())
     """)
-
-    print(f"Batch {batch_id}: merge completed successfully")
-
-    # Clean up the global temp view
     spark.catalog.dropGlobalTempView("cdc_changes_batch")
+    print(f"Batch {batch_id}: merge done")
 
+source_path = "s3a://oracle-cdc/topics/server1.C__DBZUSER.CUSTOMERS"
+stream_df = spark.readStream.schema(cdc_schema).option("maxFilesPerTrigger", 500).parquet(source_path)
 
-# ------------------------------------------------------------------
-# Streaming Source
-# ------------------------------------------------------------------
-stream_df = (
-    spark.readStream
-    .schema(cdc_schema)
-    .option("maxFilesPerTrigger", 500)
-    .parquet("s3a://oracle-cdc/topics/server1.C__DBZUSER.CUSTOMERS")
-)
+cdc_df = stream_df.select(
+    coalesce(col("after.ID"), col("before.ID")).cast("int").alias("id"),
+    coalesce(col("after.PROVIDER"), col("before.PROVIDER")).cast("string").alias("provider"),
+    coalesce(col("after.QUANTITY"), col("before.QUANTITY")).cast("long").alias("quantity"),
+    coalesce(col("after.GD_BARCODE"), col("before.GD_BARCODE")).cast("string").alias("gd_barcode"),
+    coalesce(col("after.GD_NAME"), col("before.GD_NAME")).cast("string").alias("gd_name"),
+    coalesce(col("after.P_DATE"), col("before.P_DATE")).cast("string").alias("p_date"),
+    coalesce(col("after.INVOICE_ID"), col("before.INVOICE_ID")).cast("string").alias("invoice_id"),
+    trim(coalesce(col("after.NCODE_MASKED"), col("before.NCODE_MASKED"))).alias("ncode_masked"),
+    trim(coalesce(col("after.MOBILE_MASKED"), col("before.MOBILE_MASKED"))).alias("mobile_masked"),
+    coalesce(col("after.YEAR"), col("before.YEAR")).cast("long").alias("year"),
+    coalesce(col("after.MONTH"), col("before.MONTH")).cast("long").alias("month"),
+    coalesce(col("after.DAY"), col("before.DAY")).cast("long").alias("day"),
+    coalesce(col("after.CITY"), col("before.CITY")).cast("string").alias("city"),
+    coalesce(col("after.PROVINCE"), col("before.PROVINCE")).cast("string").alias("province"),
+    to_date(from_unixtime(coalesce(col("after.M_DATE"), col("before.M_DATE"))/1000)).alias("m_date"),
+    coalesce(col("after.LATITUDE"), col("before.LATITUDE")).cast("decimal(20,10)").alias("latitude"),
+    coalesce(col("after.LONGITUDE"), col("before.LONGITUDE")).cast("decimal(20,10)").alias("longitude"),
+    coalesce(col("after.PROVINCE_CODE"), col("before.PROVINCE_CODE")).cast("string").alias("province_code"),
+    coalesce(col("after.MONTH_NAME"), col("before.MONTH_NAME")).cast("string").alias("month_name"),
+    col("op").cast("string").alias("op"), col("ts_ms").cast("long").alias("ts_ms")
+).filter(col("id").isNotNull()).filter(col("op").isNotNull())
 
-# ------------------------------------------------------------------
-# Flatten Debezium Events
-# ------------------------------------------------------------------
-cdc_df = (
-
-    stream_df
-
-    .select(
-
-        coalesce(
-            col("after.ID"),
-            col("before.ID")
-        ).cast("int").alias("id"),
-
-
-        coalesce(
-            col("after.PROVIDER"),
-            col("before.PROVIDER")
-        ).cast("string").alias("provider"),
-
-
-        coalesce(
-            col("after.QUANTITY"),
-            col("before.QUANTITY")
-        ).cast("long").alias("quantity"),
-
-
-        coalesce(
-            col("after.GD_BARCODE"),
-            col("before.GD_BARCODE")
-        ).cast("string").alias("gd_barcode"),
-
-
-        coalesce(
-            col("after.GD_NAME"),
-            col("before.GD_NAME")
-        ).cast("string").alias("gd_name"),
-
-
-        coalesce(
-            col("after.P_DATE"),
-            col("before.P_DATE")
-        ).cast("string").alias("p_date"),
-
-
-        coalesce(
-            col("after.INVOICE_ID"),
-            col("before.INVOICE_ID")
-        ).cast("string").alias("invoice_id"),
-
-
-        coalesce(
-            col("after.NCODE_MASKED"),
-            col("before.NCODE_MASKED")
-        ).cast("string").alias("ncode_masked"),
-
-
-        coalesce(
-            col("after.MOBILE_MASKED"),
-            col("before.MOBILE_MASKED")
-        ).cast("string").alias("mobile_masked"),
-
-
-        coalesce(
-            col("after.YEAR"),
-            col("before.YEAR")
-        ).cast("long").alias("year"),
-
-
-        coalesce(
-            col("after.MONTH"),
-            col("before.MONTH")
-        ).cast("long").alias("month"),
-
-
-        coalesce(
-            col("after.DAY"),
-            col("before.DAY")
-        ).cast("long").alias("day"),
-
-
-        coalesce(
-            col("after.CITY"),
-            col("before.CITY")
-        ).cast("string").alias("city"),
-
-
-        coalesce(
-            col("after.PROVINCE"),
-            col("before.PROVINCE")
-        ).cast("string").alias("province"),
-
-
-        coalesce(
-            col("after.M_DATE"),
-            col("before.M_DATE")
-        ).cast("date").alias("m_date"),
-
-
-        coalesce(
-            col("after.LATITUDE"),
-            col("before.LATITUDE")
-        ).cast("double").alias("latitude"),
-
-
-        coalesce(
-            col("after.LONGITUDE"),
-            col("before.LONGITUDE")
-        ).cast("double").alias("longitude"),
-
-
-        coalesce(
-            col("after.PROVINCE_CODE"),
-            col("before.PROVINCE_CODE")
-        ).cast("string").alias("province_code"),
-
-
-        coalesce(
-            col("after.MONTH_NAME"),
-            col("before.MONTH_NAME")
-        ).cast("string").alias("month_name"),
-
-
-        col("op").cast("string").alias("op"),
-
-        col("ts_ms").cast("long").alias("ts_ms")
-
-    )
-
-    .filter(col("id").isNotNull())
-    .filter(col("op").isNotNull())
-
-)
-
-print("\n" + "="*60)
-print("SETTING UP CLICKHOUSE VIEW")
-print("="*60)
-create_clickhouse_view_with_retry(max_retries=15, delay=10)
-
-# ------------------------------------------------------------------
-# Start Streaming Query
-# ------------------------------------------------------------------
-# Use a fresh checkpoint location
-query = (
-    cdc_df.writeStream
-    .foreachBatch(process_batch)
-    .option("checkpointLocation", "s3a://oracle-cdc/checkpoints/customers_merge_v3")
-    .trigger(processingTime="3 seconds")
-    .start()
-)
-
-print(f"Streaming query started. Query ID: {query.id}")
-
-try:
-    query.awaitTermination()
-except KeyboardInterrupt:
-    print("Stopping streaming query...")
-    query.stop()
-except Exception as e:
-    print(f"Streaming query failed: {e}")
-    query.stop()
-    raise
-finally:
-    spark.stop()
+create_clickhouse_view_with_retry()
+query = cdc_df.writeStream.foreachBatch(process_batch).option("checkpointLocation", "s3a://oracle-cdc/checkpoints/customers_merge_v7_A").trigger(processingTime="30 seconds").start()
+print(f"Started {query.id}")
+query.awaitTermination()
