@@ -17,7 +17,7 @@ cd ../
 docker login https://container-registry.oracle.com
 #and put your email and Auth token
 ################################################
-docker compose up --build -d
+docker compose -f docker-compose1.yml up --build -d
 docker container logs -f dbz_oracle19
 cd sparkjars
 docker cp spark-iceberg:/opt/spark/jars/. .
