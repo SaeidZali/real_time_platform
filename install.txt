@@ -22,6 +22,8 @@ docker container logs -f dbz_oracle19
 cd sparkjars
 docker cp spark-iceberg:/opt/spark/jars/. .
 cd ../
+docker compose -f docker-compose1.yml down
+docker compose up -d
 docker compose logs airflow | grep "Simple auth manager"
 #to see password of admin that is random
 docker container exec -it -e ORACLE_SID=ORCLCDB dbz_oracle19 sqlplus sys as sysdba
