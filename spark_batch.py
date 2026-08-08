@@ -129,25 +129,25 @@ WHERE id IN (
 spark.sql("""
 INSERT INTO nessie.oracle_cdc_db.customers
 SELECT 
-id,
-provider,
-quantity,
-gd_barcode,
-gd_name,
-p_date,
-invoice_id,
-ncode_masked,
-mobile_masked,
-year,
-month,
-day,
-city,
-province,
-CAST(m_date AS DATE),
-latitude,
-longitude,
-province_code,
-month_name
+ID,
+PROVIDER,
+QUANTITY,
+GD_BARCODE,
+GD_NAME,
+P_DATE,
+INVOICE_ID,
+NCODE_MASKED,
+MOBILE_MASKED,
+YEAR,
+MONTH,
+DAY,
+CITY,
+PROVINCE,
+CAST(M_DATE AS DATE),
+LATITUDE,
+LONGITUDE,
+PROVINCE_CODE,
+MONTH_NAME
 FROM cdc_changes
 WHERE op IN ('c','u')
 """)
