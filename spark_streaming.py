@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS nessie.oracle_cdc_db.customers (
     p_date STRING, invoice_id STRING, ncode_masked STRING, mobile_masked STRING,
     year BIGINT, month BIGINT, day BIGINT, city STRING, province STRING,
     m_date DATE, latitude DECIMAL(20,10), longitude DECIMAL(20,10),
-    province_code STRING, month_name STRING, last_updated TIMESTAMP
+    province_code STRING, month_name STRING, gd_cat STRING, gd_brand STRING, last_updated TIMESTAMP
 ) USING iceberg PARTITIONED BY (bucket(16, id))
 """)
 
