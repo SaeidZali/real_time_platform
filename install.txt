@@ -69,11 +69,6 @@ cd drivers
 docker cp clickhouse-jdbc.jar nifi:/opt/nifi/nifi-current/lib/clickhouse-jdbc.jar
 docker cp ojdbc17.jar nifi:/opt/nifi/nifi-current/lib/ojdbc17.jar
 cd ../
-################################################for test and debug
-####docker exec spark-iceberg mkdir -p /opt/spark/work-dir
-####docker cp spark_streaming.py spark-iceberg:/opt/spark/work-dir/
-####docker exec -it spark-iceberg spark-submit /opt/spark/work-dir/spark_streaming.py
-################################################
 ####in airflow ui you can see dag
 ####in superset connect to clickhouse and create dashboard
 ####in dremio 
