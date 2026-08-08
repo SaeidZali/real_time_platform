@@ -94,7 +94,6 @@ docker exec -it trino trino
 SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
 SELECT * FROM iceberg.oracle_cdc_db.customers FOR TIMESTAMP AS OF TIMESTAMP '2026-06-14 16:09:40.268 UTC' LIMIT 10;
 SELECT * FROM oracle."C##DBZUSER".CUSTOMERS limit 10;
-SELECT id, from_utf8(name) AS name FROM clickhouse.default.CUSTOMERS_view LIMIT 10;
 show schemas from kafka;
 show tables from kafka.default;
 DESCRIBE kafka.default."server1.c__dbzuser.customers";
