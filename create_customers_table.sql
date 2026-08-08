@@ -27,7 +27,9 @@ CREATE TABLE customers (
   latitude      NUMBER(20,10),
   longitude     NUMBER(20,10),
   province_code VARCHAR2(50),
-  month_name    VARCHAR2(50)
+  month_name    VARCHAR2(50),
+  gd_cat        VARCHAR2(500),
+  gd_brand      VARCHAR2(500)
 );
 
 PROMPT Enabling supplemental logging...
