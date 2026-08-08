@@ -41,3 +41,8 @@ docker exec -it kafka kafka-consumer-groups \
   --bootstrap-server kafka:9092 \
   --group connect-minio-s3-sink \
   --describe
+################################################for test and debug
+####docker exec spark-iceberg mkdir -p /opt/spark/work-dir
+####docker cp spark_streaming.py spark-iceberg:/opt/spark/work-dir/
+####docker exec -it spark-iceberg spark-submit /opt/spark/work-dir/spark_streaming.py
+################################################
