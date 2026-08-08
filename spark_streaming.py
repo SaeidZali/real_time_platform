@@ -116,6 +116,8 @@ cdc_df = stream_df.select(
     coalesce(col("after.LONGITUDE"), col("before.LONGITUDE")).cast("decimal(20,10)").alias("longitude"),
     coalesce(col("after.PROVINCE_CODE"), col("before.PROVINCE_CODE")).cast("string").alias("province_code"),
     coalesce(col("after.MONTH_NAME"), col("before.MONTH_NAME")).cast("string").alias("month_name"),
+    coalesce(col("after.GD_CAT"), col("before.GD_CAT")).cast("string").alias("gd_cat"),
+    coalesce(col("after.GD_BRAND"), col("before.GD_BRAND")).cast("string").alias("gd_brand"),
     col("op").cast("string").alias("op"), col("ts_ms").cast("long").alias("ts_ms")
 ).filter(col("id").isNotNull()).filter(col("op").isNotNull())
 
