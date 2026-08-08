@@ -30,7 +30,9 @@ CREATE TABLE IF NOT EXISTS nessie.oracle_cdc_db.customers (
     LATITUDE DECIMAL(20,10),
     LONGITUDE DECIMAL(20,10),
     PROVINCE_CODE STRING,
-    MONTH_NAME STRING
+    MONTH_NAME STRING,
+    GD_CAT STRING,
+    GD_BRAND STRING
 )
 USING iceberg
 """)
@@ -86,6 +88,10 @@ WITH deduped AS (
         COALESCE(after.PROVINCE_CODE,before.PROVINCE_CODE) AS PROVINCE_CODE,
 
         COALESCE(after.MONTH_NAME,before.MONTH_NAME) AS MONTH_NAME,
+
+        COALESCE(after.GD_CAT,before.GD_CAT) AS GD_CAT,
+
+        COALESCE(after.GD_BRAND,before.GD_BRAND) AS GD_BRAND,
         
         op,
         ts_ms,
@@ -147,7 +153,9 @@ CAST(M_DATE AS DATE),
 LATITUDE,
 LONGITUDE,
 PROVINCE_CODE,
-MONTH_NAME
+MONTH_NAME,
+GD_CAT,
+GD_BRAND
 FROM cdc_changes
 WHERE op IN ('c','u')
 """)
