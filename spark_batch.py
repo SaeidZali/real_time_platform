@@ -49,43 +49,43 @@ FROM parquet.`s3a://oracle-cdc/topics/server1.C__DBZUSER.CUSTOMERS`
 cdc_df = spark.sql(f"""
 WITH deduped AS (
     SELECT
-        COALESCE(after.ID,before.ID) AS id,
+        COALESCE(after.ID,before.ID) AS ID,
 
-        COALESCE(after.PROVIDER,before.PROVIDER) AS provider,
+        COALESCE(after.PROVIDER,before.PROVIDER) AS PROVIDER,
 
-        COALESCE(after.QUANTITY,before.QUANTITY) AS quantity,
+        COALESCE(after.QUANTITY,before.QUANTITY) AS QUANTITY,
 
-        COALESCE(after.GD_BARCODE,before.GD_BARCODE) AS gd_barcode,
+        COALESCE(after.GD_BARCODE,before.GD_BARCODE) AS GD_BARCODE,
 
-        COALESCE(after.GD_NAME,before.GD_NAME) AS gd_name,
+        COALESCE(after.GD_NAME,before.GD_NAME) AS GD_NAME,
 
-        COALESCE(after.P_DATE,before.P_DATE) AS p_date,
+        COALESCE(after.P_DATE,before.P_DATE) AS P_DATE,
 
-        COALESCE(after.INVOICE_ID,before.INVOICE_ID) AS invoice_id,
+        COALESCE(after.INVOICE_ID,before.INVOICE_ID) AS INVOICE_ID,
 
-        COALESCE(after.NCODE_MASKED,before.NCODE_MASKED) AS ncode_masked,
+        COALESCE(after.NCODE_MASKED,before.NCODE_MASKED) AS NCODE_MASKED,
 
-        COALESCE(after.MOBILE_MASKED,before.MOBILE_MASKED) AS mobile_masked,
+        COALESCE(after.MOBILE_MASKED,before.MOBILE_MASKED) AS MOBILE_MASKED,
 
-        COALESCE(after.YEAR,before.YEAR) AS year,
+        COALESCE(after.YEAR,before.YEAR) AS YEAR,
 
-        COALESCE(after.MONTH,before.MONTH) AS month,
+        COALESCE(after.MONTH,before.MONTH) AS MONTH,
 
-        COALESCE(after.DAY,before.DAY) AS day,
+        COALESCE(after.DAY,before.DAY) AS DAY,
 
-        COALESCE(after.CITY,before.CITY) AS city,
+        COALESCE(after.CITY,before.CITY) AS CITY,
 
-        COALESCE(after.PROVINCE,before.PROVINCE) AS province,
+        COALESCE(after.PROVINCE,before.PROVINCE) AS PROVINCE,
 
-        COALESCE(after.M_DATE,before.M_DATE) AS m_date,
+        COALESCE(after.M_DATE,before.M_DATE) AS M_DATE,
 
-        COALESCE(after.LATITUDE,before.LATITUDE) AS latitude,
+        COALESCE(after.LATITUDE,before.LATITUDE) AS LATITUDE,
 
-        COALESCE(after.LONGITUDE,before.LONGITUDE) AS longitude,
+        COALESCE(after.LONGITUDE,before.LONGITUDE) AS LONGITUDE,
 
-        COALESCE(after.PROVINCE_CODE,before.PROVINCE_CODE) AS province_code,
+        COALESCE(after.PROVINCE_CODE,before.PROVINCE_CODE) AS PROVINCE_CODE,
 
-        COALESCE(after.MONTH_NAME,before.MONTH_NAME) AS month_name,
+        COALESCE(after.MONTH_NAME,before.MONTH_NAME) AS MONTH_NAME,
         
         op,
         ts_ms,
