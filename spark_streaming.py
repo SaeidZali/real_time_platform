@@ -44,7 +44,8 @@ cdc_schema = StructType([
         StructField("CITY", StringType()), StructField("PROVINCE", StringType()),
         StructField("M_DATE", LongType()), StructField("LATITUDE", DecimalType(20,10)),
         StructField("LONGITUDE", DecimalType(20,10)), StructField("PROVINCE_CODE", StringType()),
-        StructField("MONTH_NAME", StringType())
+        StructField("MONTH_NAME", StringType()), StructField("GD_CAT", StringType()),
+        StructField("GD_BRAND", StringType())
     ])),
     StructField("after", StructType([
         StructField("ID", IntegerType()), StructField("PROVIDER", StringType()),
@@ -56,7 +57,8 @@ cdc_schema = StructType([
         StructField("CITY", StringType()), StructField("PROVINCE", StringType()),
         StructField("M_DATE", LongType()), StructField("LATITUDE", DecimalType(20,10)),
         StructField("LONGITUDE", DecimalType(20,10)), StructField("PROVINCE_CODE", StringType()),
-        StructField("MONTH_NAME", StringType())
+        StructField("MONTH_NAME", StringType()), StructField("GD_CAT", StringType()),
+        StructField("GD_BRAND", StringType())
     ])),
     StructField("op", StringType()), StructField("ts_ms", LongType())
 ])
