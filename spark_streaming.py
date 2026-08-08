@@ -68,7 +68,7 @@ def create_clickhouse_view_with_retry(max_retries=10, delay=5):
             client.command("SET allow_experimental_database_atomic = 1")
             location = spark.sql("DESCRIBE EXTENDED nessie.oracle_cdc_db.customers").filter("col_name = 'Location'").collect()[0][1]
             ch_location = location.replace("s3://oracle-cdc/", "http://minio:9000/oracle-cdc/")
-            client.command(f"CREATE OR REPLACE VIEW FACT_SALES AS SELECT provider AS PROVIDER,quantity AS QUANTITY,gd_barcode AS GD_BARCODE,gd_name AS GD_NAME,p_date AS P_DATE,invoice_id AS INVOICE_ID,ncode_masked AS NCODE_MASKED,mobile_masked AS MPBILE_MASKED,year AS YEAR,month AS MONTH,day AS DAY,city AS CITY,province AS PROVINCE,m_date AS M_DATE,toFloat64(latitude) AS LATITUDE,toFloat64(longitude) AS LONGITUDE,province_code AS PROVINCE_CODE,month_name AS MONTH_NAME FROM iceberg('{ch_location}')")
+            client.command(f"CREATE OR REPLACE VIEW FACT_SALES AS SELECT provider AS PROVIDER,quantity AS QUANTITY,gd_barcode AS GD_BARCODE,gd_name AS GD_NAME,p_date AS P_DATE,invoice_id AS INVOICE_ID,ncode_masked AS NCODE_MASKED,mobile_masked AS MOBILE_MASKED,year AS YEAR,month AS MONTH,day AS DAY,city AS CITY,province AS PROVINCE,m_date AS M_DATE,toFloat64(latitude) AS LATITUDE,toFloat64(longitude) AS LONGITUDE,province_code AS PROVINCE_CODE,month_name AS MONTH_NAME FROM iceberg('{ch_location}')")
             print("✅ ClickHouse view FACT_SALES created"); return True
         except Exception as e:
             print(f"Retry {attempt+1} failed: {e}"); time.sleep(delay)
