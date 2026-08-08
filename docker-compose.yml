@@ -498,6 +498,7 @@ services:
       - nessie
     volumes:
       - ./trino/catalog:/etc/trino/catalog
+      - ./trino/config:/etc/trino/conf  # Add this line
     restart: unless-stopped
 
   nifi:
