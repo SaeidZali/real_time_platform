@@ -500,6 +500,8 @@ services:
       - ./trino/catalog:/etc/trino/catalog
       - ./trino/config:/etc/trino/conf  # Add this line
     restart: unless-stopped
+    environment:
+      - TRINO_CONFIG=/etc/trino/conf/config.properties
 
   nifi:
     image: apache/nifi:latest
