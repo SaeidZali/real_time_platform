@@ -1,6 +1,6 @@
 git clone https://github.com/SaeidZali/real_time_platform.git
 cd real_time_platform/
-mkdir -p connectors clickhouse/{data,logs} ./data/kafka oradata miniodata postgres_data airflow/logs airflow/plugins ./cloudbeaver_data ./dremio/data ./dremio/logs ./nessie-data ./marquez/postgres ./jars nifi-current/{conf,content_repository,database_repository,flowfile_repository,provenance_repository,state,logs,drivers,lib}
+mkdir -p connectors clickhouse/{data,logs} ./data/kafka oradata miniodata postgres_data airflow/logs airflow/plugins ./cloudbeaver_data ./dremio/data ./dremio/logs ./nessie-data ./marquez/postgres ./jars nifi-current/{conf,content_repository,database_repository,flowfile_repository,provenance_repository,state,logs,lib}
 sudo chmod -R 755 ./data && sudo chmod -R 777 ./data && sudo chown -R 54321:54321 oradata && sudo chmod 775 oradata && chmod 777 miniodata && sudo chmod 777 ./ -R && chmod 777 ./dremio/data ./dremio/logs && chmod 777 ./nessie-data
 curl -L \
 https://repo1.maven.org/maven2/io/openlineage/openlineage-spark_2.12/1.28.0/openlineage-spark_2.12-1.28.0.jar \
