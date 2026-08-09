@@ -96,6 +96,7 @@ SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
 SELECT current_timestamp;
 ###output 2026-08-08 14:52:22.157 +0000
 SELECT * FROM iceberg.oracle_cdc_db.customers FOR TIMESTAMP AS OF TIMESTAMP '2026-08-08 14:50:00 UTC' LIMIT 10;
+SELECT * FROM clickhouse.default."FACT_SALES" LIMIT 10;
 SELECT * FROM oracle."C##DBZUSER".CUSTOMERS limit 10;
 show schemas from kafka;
 show tables from kafka.default;
