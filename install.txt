@@ -91,6 +91,7 @@ curl --noproxy '*' -i -X POST \
 ####Encrypt connection uncheck
 ####SELECT * from nessie."oracle_cdc_db".customers AT COMMIT "b01a7128b3f452342fc62136ec15eeac8d7b593504cb6bdff80b4fd1b169fab3"
 docker exec -it trino trino
+###or in dbeaver Trino@172.16.1.4:20320 username admin password empty
 SELECT * FROM iceberg.oracle_cdc_db.customers LIMIT 10;
 SELECT current_timestamp;
 ###output 2026-08-08 14:52:22.157 +0000
