@@ -28,7 +28,7 @@ cd ../../
 cd nifi-current/drivers
 cp clickhouse-jdbc.jar ../nifi-current/lib/.
 cp ojdbc17.jar ../nifi-current/lib/.
-cd ../
+cd ../../
 docker compose -f docker-compose1.yml down
 docker compose up -d
 docker compose logs airflow | grep "Simple auth manager"
