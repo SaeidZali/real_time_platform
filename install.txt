@@ -25,7 +25,7 @@ cd ../
 cd nifi-current/lib
 docker cp nifi:/opt/nifi/nifi-current/lib/. .
 cd ../../
-cd drivers
+cd nifi-current/drivers
 cp clickhouse-jdbc.jar ../nifi-current/lib/.
 cp ojdbc17.jar ../nifi-current/lib/.
 cd ../
