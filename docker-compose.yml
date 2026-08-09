@@ -516,8 +516,8 @@ services:
       - SINGLE_USER_CREDENTIALS_USERNAME=admin
       - SINGLE_USER_CREDENTIALS_PASSWORD=@S09354120191s
     volumes:
-      - ./drivers:/opt/nifi/nifi-current/drivers
-      - ./libofnifi:/opt/nifi/nifi-current/lib
+      - ./nifi-current/drivers:/opt/nifi/nifi-current/drivers
+      - ./nifi-current/lib:/opt/nifi/nifi-current/lib
     networks:
       - debezium-net
 
