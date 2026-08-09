@@ -22,13 +22,12 @@ docker container logs -f dbz_oracle19
 cd sparkjars
 docker cp spark-iceberg:/opt/spark/jars/. .
 cd ../
-mkdir libofnifi
-cd libofnifi
+cd nifi-current/lib
 docker cp nifi:/opt/nifi/nifi-current/lib/. .
-cd ../
+cd ../../
 cd drivers
-cp clickhouse-jdbc.jar ../libofnifi/.
-cp ojdbc17.jar ../libofnifi/.
+cp clickhouse-jdbc.jar ../nifi-current/lib/.
+cp ojdbc17.jar ../nifi-current/lib/.
 cd ../
 docker compose -f docker-compose1.yml down
 docker compose up -d
