@@ -1,4 +1,25 @@
 services:
+  postgresql:
+    container_name: postgresql
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: root
+    image: postgres:13
+    networks:
+      - debezium-net
+    ports:
+      - "20332:5432"
+    volumes:
+      # Bind mount for PostgreSQL data - adjust path as needed
+      - ./postgresql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d myapp"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   oracle:
     image: container-registry.oracle.com/database/enterprise:19.3.0.0 #oracledb19c/oracle.19.3.0-ee:oracle19.3.0-ee
     container_name: dbz_oracle19
@@ -246,7 +267,7 @@ services:
     restart: unless-stopped
 
   superset:
-    image: apache/superset:latest
+    image: superset1003:latest
     container_name: superset
     ports:
       - "20321:8088"
@@ -262,7 +283,8 @@ services:
     command: >
       sh -c "
       pip install --user 'sqlalchemy==1.3.24' &&
-      pip install --user 'clickhouse-connect' &&
+      pip install --user 'lz4==4.0.2' &&
+      pip install --user 'clickhouse-connect==0.7.16' &&
       pip install --user 'clickhouse-sqlalchemy==0.2.5' &&
       superset fab create-admin --username admin --firstname Admin --lastname User --email admin@superset.com --password admin &&
       superset db upgrade &&
@@ -516,11 +538,62 @@ services:
       - SINGLE_USER_CREDENTIALS_USERNAME=admin
       - SINGLE_USER_CREDENTIALS_PASSWORD=@S09354120191s
     volumes:
-      - ./nifi-current/drivers:/opt/nifi/nifi-current/drivers
-      - ./nifi-current/lib:/opt/nifi/nifi-current/lib
+      - ./drivers:/opt/nifi/nifi-current/drivers
+      - ./libofnifi:/opt/nifi/nifi-current/lib
     networks:
       - debezium-net
 
+  superset-worker:
+    container_name: superset_worker
+    image: superset1003:latest
+    command: celery --app=superset.tasks.celery_app:app worker -O fair -l INFO
+    environment:
+      SUPERSET_SECRET_KEY: "change_this_secret_key_to_something_secure"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - debezium-net
+    volumes:
+      - ./worker_data:/app/superset_home
+    healthcheck:
+      disable: true
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  superset-beat:
+    container_name: superset_beat
+    image: superset1003:latest
+    command: celery --app=superset.tasks.celery_app:app beat -l INFO --pidfile /tmp/celerybeat.pid -s /tmp/celerybeat-schedule
+    environment:
+      SUPERSET_SECRET_KEY: "change_this_secret_key_to_something_secure"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - debezium-net
+    volumes:
+      - ./beat_data:/app/superset_home
+    healthcheck:
+      disable: true
+    depends_on:
+      postgresql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  redis:
+    container_name: redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    ports:
+      - "20333:6379"
+    networks:
+      - debezium-net
+    volumes:
+      - ./data/redis:/data
 
 networks:
   debezium-net:
